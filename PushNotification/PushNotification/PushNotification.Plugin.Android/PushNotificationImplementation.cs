@@ -3,18 +3,14 @@ using Android.Content;
 using PushNotification.Plugin.Abstractions;
 using System;
 using System.Threading.Tasks;
-using Android.Gms.Common;
-using Java.Util.Logging;
 using Android.Gms.Gcm;
-using Android.Util;
 using Java.Lang;
 using Android.Content.PM;
 using Android.OS;
 using System.Collections.Generic;
-using Android.Preferences;
 using Android.Support.V4.App;
 using Android.Media;
-using Android;
+using Uri = Android.Net.Uri;
 
 
 namespace PushNotification.Plugin
@@ -126,7 +122,7 @@ namespace PushNotification.Plugin
                             int notifyId = 0;
                             string title = context.ApplicationInfo.LoadLabel(context.PackageManager);
                             string message = "";
-                            string tag = "";
+                            string tag = null;
 
                             if (!string.IsNullOrEmpty(CrossPushNotification.NotificationContentTextKey) && parameters.ContainsKey(CrossPushNotification.NotificationContentTextKey))
                             {
@@ -393,14 +389,18 @@ namespace PushNotification.Plugin
                  System.Diagnostics.Debug.WriteLine(ex.ToString());
              }
 
-
             Intent resultIntent = context.PackageManager.GetLaunchIntentForPackage(context.PackageName);
-
-            //Intent resultIntent = new Intent(context, typeof(T));
-           
-
+            //Intent resultIntent = new Intent(context, );
+            var uri = new Uri.Builder().Scheme("content").Authority("kawaw.com").Path("what").Build();
+            resultIntent.SetData(uri);
+            resultIntent.PutExtra("com.kawaw.id", notifyId);
+            if (!string.IsNullOrEmpty(tag))
+            {
+                resultIntent.PutExtra("com.kawaw.tag", tag);
+            }
+            resultIntent.SetFlags(ActivityFlags.SingleTop);
+            System.Diagnostics.Debug.WriteLine("extra data: {0}, {1}", tag, notifyId);
              
-            // Create a PendingIntent; we're only using one PendingIntent (ID = 0):
             const int pendingIntentId = 0;
             PendingIntent resultPendingIntent = PendingIntent.GetActivity(context, pendingIntentId, resultIntent, PendingIntentFlags.OneShot);
           
